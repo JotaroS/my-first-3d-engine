@@ -1,3 +1,4 @@
+
 #pragma once
 #include <vector>
 #include <glad/glad.h>
@@ -14,6 +15,6 @@ public:
     unsigned int vao = 0, vbo = 0, nbo = 0, ebo = 0; //
 
     void upload(); // Upload to GPU
-    void draw() const; // Draw the mesh (constant function for safety)
-
+    void draw() const; // Draw the mesh (constant function for safety) (why const? because it doesn't modify the mesh data)
+    void updateMeshOnly();
 };

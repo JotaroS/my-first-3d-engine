@@ -87,6 +87,8 @@ void Renderer::draw() {
     glUniform3f(glGetUniformLocation(shader, "lightColor[1]"), 0.6, 0.7, 1.0);
     glUniform3f(glGetUniformLocation(shader, "lightColor[2]"), 1.0, 0.7, 0.4);
 
+    glUniform3f(glGetUniformLocation(shader, "ambientColor"), 0.2f, 0.2f, 0.2f);
+
     glUniform3f(glGetUniformLocation(shader, "uColor"), 0.8f, 0.8f, 0.85f);
 }
 

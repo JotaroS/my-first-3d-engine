@@ -33,7 +33,7 @@ int main(void){
     
     RenderObject cubeObj("Cube");
     auto& cubeRenderer = cubeObj.addComponent<MeshRenderer>();
-    cubeRenderer.setMesh(Primitives::makeCube(1.0f));
+    cubeRenderer.setMesh(Primitives::makeSphere(0.3f));
 
     Renderer renderer;
     renderer.init();
@@ -41,6 +41,8 @@ int main(void){
     while (!glfwWindowShouldClose(window))
     {
         renderer.draw();
+        // slightly rotate the cube around y axis (quaternion
+        cubeObj.transform.rotation = glm::rotate(cubeObj.transform.rotation, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         cubeObj.draw(renderer);
         glfwSwapBuffers(window);
         glfwPollEvents();

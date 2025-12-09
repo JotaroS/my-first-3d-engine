@@ -4,6 +4,7 @@
 #include "transform.hpp"
 #include "renderer.hpp"
 #include "component.hpp"
+
 using namespace std;
 
 class RenderObject {
@@ -11,7 +12,9 @@ public:
     string name;
     Transform transform;
     vector<Component*> components;
-    RenderObject(const string& n) : name(n) {}
+    RenderObject(const string& n) : name(n) {
+        
+    }
     ~RenderObject() {
         for (auto comp : components) {
             delete comp;
@@ -31,5 +34,7 @@ public:
             comp->draw(renderer);
         }
     }
+
+
     
 };

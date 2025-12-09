@@ -7,11 +7,12 @@ in vec3 vPos;
 uniform vec3 lightPos[3];
 uniform vec3 lightColor[3];
 
+uniform vec3 ambientColor;
 uniform vec3 uColor;
 
 void main() {
     vec3 N = normalize(vNormal);
-    vec3 col = vec3(0.0);
+    vec3 col = ambientColor;
 
     for (int i = 0; i < 3; i++) {
         vec3 L = normalize(lightPos[i] - vPos);
