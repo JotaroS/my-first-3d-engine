@@ -34,7 +34,4 @@ public:
             comp->draw(renderer);
         }
     }
-
-
-    
 };

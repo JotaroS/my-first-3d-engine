@@ -38,6 +38,15 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(glm)
 
+# tinygltf (header only)
+FetchContent_Declare(
+    tinygltf
+    GIT_REPOSITORY https://github.com/syoyo/tinygltf.git
+    GIT_TAG        v2.8.9
+)
+
+FetchContent_MakeAvailable(tinygltf)
+
 # executables (all files in src/ recursively)
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp src/*.h)
 add_executable(${PROJECT_NAME} ${SRC_FILES} external/src/glad.c)

@@ -33,7 +33,7 @@ void Mesh::draw() const {
 }
 
 
-void Mesh::updateMeshOnly() {
+void Mesh::updatePositionsOnly() {
     // Update position buffer
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, positions.size() * sizeof(glm::vec3), positions.data());

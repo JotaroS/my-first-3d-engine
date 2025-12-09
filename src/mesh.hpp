@@ -16,5 +16,5 @@ public:
 
     void upload(); // Upload to GPU
     void draw() const; // Draw the mesh (constant function for safety) (why const? because it doesn't modify the mesh data)
-    void updateMeshOnly();
+    void updatePositionsOnly();
 };

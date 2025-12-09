@@ -1,10 +1,14 @@
 // let's goooooooo
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
+#include <string>
 #include "primitives.hpp"
 #include "renderer.hpp"
 #include "renderobject.hpp"
 #include "meshrenderer.hpp"
+#include "gltfloader.hpp"
+
 int main(void){
     if (!glfwInit())
         return -1;
@@ -38,12 +42,27 @@ int main(void){
     Renderer renderer;
     renderer.init();
 
+    GltfSkinData skinData;
+    try {
+        std::string modelPath = "../models/lion.gltf";
+        std::cout << "Loading GLTF file: " << modelPath << std::endl;
+        skinData = loadGltfSkin(modelPath);
+        std::cout << "GLTF file loaded successfully!" << std::endl;
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to load GLTF: " << e.what() << std::endl;
+        // Continue without the model
+    }
+    RenderObject lionObj("Lion");
+    auto& lionRenderer = lionObj.addComponent<MeshRenderer>();
+    lionRenderer.setMesh(skinData.mesh);
+
     while (!glfwWindowShouldClose(window))
     {
         renderer.draw();
         // slightly rotate the cube around y axis (quaternion
         cubeObj.transform.rotation = glm::rotate(cubeObj.transform.rotation, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
         cubeObj.draw(renderer);
+        lionObj.draw(renderer);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
