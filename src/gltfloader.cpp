@@ -85,78 +85,106 @@ GltfSkinData loadGltfSkin(const std::string& path) {
             const uint32_t* p = reinterpret_cast<const uint32_t*>(&buf.data[bv.byteOffset]);
             for (int i = 0; i < acc.count; i++) out.mesh.indices[i] = p[i];
         }
+        std::cout << "Loaded " << out.mesh.indices.size() << " indices." << std::endl;
     }
 
     // ---- 2. JOINTS_0 / WEIGHTS_0 読み取り ----
-    // {
-    //     auto& accJ = model.accessors[prim.attributes.at("JOINTS_0")];
-    //     auto& bvJ  = model.bufferViews[accJ.bufferView];
-    //     auto& bufJ = model.buffers[bvJ.buffer];
-    //     const uint16_t* p = reinterpret_cast<const uint16_t*>(&bufJ.data[bvJ.byteOffset]);
+    {
+        auto& accJ = model.accessors[prim.attributes.at("JOINTS_0")];
+        auto& bvJ  = model.bufferViews[accJ.bufferView];
+        auto& bufJ = model.buffers[bvJ.buffer];
+        const uint16_t* p = reinterpret_cast<const uint16_t*>(&bufJ.data[bvJ.byteOffset]);
 
-    //     out.joints0.resize(accJ.count);
+        out.joints0.resize(accJ.count);
 
-    //     for (int i = 0; i < accJ.count; i++) {
-    //         out.joints0[i] = glm::ivec4(p[i*4+0], p[i*4+1], p[i*4+2], p[i*4+3]);
-    //     }
-    // }
-    // {
-    //     auto& accW = model.accessors[prim.attributes.at("WEIGHTS_0")];
-    //     auto& bvW  = model.bufferViews[accW.bufferView];
-    //     auto& bufW = model.buffers[bvW.buffer];
-    //     const float* p = reinterpret_cast<const float*>(&bufW.data[bvW.byteOffset]);
+        for (int i = 0; i < accJ.count; i++) {
+            out.joints0[i] = glm::ivec4(p[i*4+0], p[i*4+1], p[i*4+2], p[i*4+3]);
+        }
+        std::cout << "Loaded " << out.joints0.size() << " joint indices." << std::endl;
+    }
+    {
+        auto& accW = model.accessors[prim.attributes.at("WEIGHTS_0")];
+        auto& bvW  = model.bufferViews[accW.bufferView];
+        auto& bufW = model.buffers[bvW.buffer];
+        const float* p = reinterpret_cast<const float*>(&bufW.data[bvW.byteOffset]);
 
-    //     out.weights0.resize(accW.count);
+        out.weights0.resize(accW.count);
 
-    //     for (int i = 0; i < accW.count; i++) {
-    //         out.weights0[i] = glm::vec4(p[i*4+0], p[i*4+1], p[i*4+2], p[i*4+3]);
-    //     }
-    // }
+        for (int i = 0; i < accW.count; i++) {
+            out.weights0[i] = glm::vec4(p[i*4+0], p[i*4+1], p[i*4+2], p[i*4+3]);
+        }
+        std::cout << "Loaded " << out.weights0.size() << " joint weights." << std::endl;
+    }
 
     // ---- 3. Skin (bone) の構築 ----
-    // const tinygltf::Skin& skin = model.skins[0];
+    const tinygltf::Skin& skin = model.skins[0];
 
     // // inverseBindMatrices
-    // {
-    //     const auto& acc = model.accessors[skin.inverseBindMatrices];
-    //     const auto& bv  = model.bufferViews[acc.bufferView];
-    //     const auto& buf = model.buffers[bv.buffer];
-    //     const float* p  = reinterpret_cast<const float*>(&buf.data[bv.byteOffset]);
+    {
+        const auto& acc = model.accessors[skin.inverseBindMatrices];
+        const auto& bv  = model.bufferViews[acc.bufferView];
+        const auto& buf = model.buffers[bv.buffer];
+        const float* p  = reinterpret_cast<const float*>(&buf.data[bv.byteOffset]);
 
-    //     out.joints.resize(skin.joints.size());
+        out.joints.resize(skin.joints.size());
 
-    //     for (int i = 0; i < skin.joints.size(); i++) {
-    //         out.joints[i].invBind = glm::make_mat4(p + i*16);
-    //     }
-    // }
+        for (int i = 0; i < skin.joints.size(); i++) {
+            out.joints[i].invBind = glm::make_mat4(p + i*16);
+        }
+    }
 
     // joints: local transform + parent
-    // for (int i = 0; i < skin.joints.size(); i++) {
-    //     int nodeId = skin.joints[i];
-    //     const auto& node = model.nodes[nodeId];
+    for (int i = 0; i < skin.joints.size(); i++) {
+        int nodeIdx = skin.joints[i];
+        const tinygltf::Node& node = model.nodes[nodeIdx];
 
-    //     // local matrix
-    //     if (node.matrix.size() == 16) {
-    //         out.joints[i].local = glm::make_mat4(node.matrix.data());
-    //     } else {
-    //         glm::mat4 T = glm::translate(glm::mat4(1), glm::vec3(node.translation[0], node.translation[1], node.translation[2]));
-    //         glm::quat q = glm::quat(node.rotation[3], node.rotation[0], node.rotation[1], node.rotation[2]);
-    //         glm::mat4 R = glm::mat4_cast(q);
-    //         glm::mat4 S = glm::scale(glm::mat4(1), glm::vec3(node.scale[0], node.scale[1], node.scale[2]));
-    //         out.joints[i].local = T * R * S;
-        // }
-        // parent index
-        // out.joints[i].parent = node.parent; // tinygltf では自前で設定すると良い
+        // parent
+        out.joints[i].parent = -1;
+        for (int j = 0; j < model.nodes.size(); j++) {
+            const tinygltf::Node& potentialParent = model.nodes[j];
+            for (int c : potentialParent.children) {
+                if (c == nodeIdx) {
+                    out.joints[i].parent = j;
+                    break;
+                }
+            }
+            if (out.joints[i].parent != -1) break;
+        }
 
-        // std::vector<int> parentIndices(model.nodes.size(), -1);
-        // for (int j = 0; j < model.nodes.size(); j++) {
-        //     const auto& n = model.nodes[j];
-        //     for (const int childId : n.children) {
-        //         parentIndices[childId] = j;
-        //     }
-        // }
-        // out.joints[i].parent = parentIndices[nodeId];
-    // }
+        // local transform
+        glm::vec3 translation(0.0f);
+        glm::vec4 rotation(0.0f, 0.0f, 0.0f, 1.0f);
+        glm::vec3 scale(1.0f);
+
+        if (node.translation.size() == 3) {
+            translation = glm::vec3(
+                static_cast<float>(node.translation[0]),
+                static_cast<float>(node.translation[1]),
+                static_cast<float>(node.translation[2])
+            );
+        }
+        if (node.rotation.size() == 4) {
+            rotation = glm::vec4(
+                static_cast<float>(node.rotation[0]),
+                static_cast<float>(node.rotation[1]),
+                static_cast<float>(node.rotation[2]),
+                static_cast<float>(node.rotation[3])
+            );
+        }
+        if (node.scale.size() == 3) {
+            scale = glm::vec3(
+                static_cast<float>(node.scale[0]),
+                static_cast<float>(node.scale[1]),
+                static_cast<float>(node.scale[2])
+            );
+        }
+
+        out.joints[i].local =
+            glm::translate(glm::mat4(1.0f), translation) *
+            glm::mat4_cast(glm::quat(rotation.w, rotation.x, rotation.y, rotation.z)) *
+            glm::scale(glm::mat4(1.0f), scale);
+        std::cout << "joint number " << i << " parent: " << out.joints[i].parent << std::endl;
+    }
 
     out.mesh.upload();
     return out;

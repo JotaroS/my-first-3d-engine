@@ -26,6 +26,9 @@ int main(void){
     }
 
     glfwMakeContextCurrent(window);
+    
+    // Set V-Sync (1 = 60fps on most monitors, 0 = unlimited)
+    glfwSwapInterval(1);
 
     // Initialize GLAD
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -44,7 +47,7 @@ int main(void){
 
     GltfSkinData skinData;
     try {
-        std::string modelPath = "../models/lion.gltf";
+        std::string modelPath = "../models/maybecaracter2rig2.gltf";
         std::cout << "Loading GLTF file: " << modelPath << std::endl;
         skinData = loadGltfSkin(modelPath);
         std::cout << "GLTF file loaded successfully!" << std::endl;
@@ -60,8 +63,8 @@ int main(void){
     {
         renderer.draw();
         // slightly rotate the cube around y axis (quaternion
-        cubeObj.transform.rotation = glm::rotate(cubeObj.transform.rotation, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        cubeObj.draw(renderer);
+        lionObj.transform.rotation = glm::rotate(lionObj.transform.rotation, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        lionObj.transform.scale = glm::vec3(0.5f); // scale down the lion model
         lionObj.draw(renderer);
         glfwSwapBuffers(window);
         glfwPollEvents();
