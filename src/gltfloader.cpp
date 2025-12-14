@@ -90,23 +90,39 @@ GltfSkinData loadGltfSkin(const std::string& path) {
 
     // ---- 2. JOINTS_0 / WEIGHTS_0 読み取り ----
     {
-        auto& accJ = model.accessors[prim.attributes.at("JOINTS_0")];
-        auto& bvJ  = model.bufferViews[accJ.bufferView];
-        auto& bufJ = model.buffers[bvJ.buffer];
-        const uint16_t* p = reinterpret_cast<const uint16_t*>(&bufJ.data[bvJ.byteOffset]);
-
+        const auto& accJ = model.accessors[prim.attributes.at("JOINTS_0")];
+        const auto& bvJ  = model.bufferViews[accJ.bufferView];
+        const auto& bufJ = model.buffers[bvJ.buffer];
+        
+        // Calculate correct offset (bufferView offset + accessor offset)
+        size_t offset = bvJ.byteOffset + accJ.byteOffset;
+        const unsigned char* basePtr = &bufJ.data[offset];
+        
         out.joints0.resize(accJ.count);
 
-        for (int i = 0; i < accJ.count; i++) {
-            out.joints0[i] = glm::ivec4(p[i*4+0], p[i*4+1], p[i*4+2], p[i*4+3]);
+        // Handle different component types
+        if (accJ.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
+            for (int i = 0; i < accJ.count; i++) {
+                const uint8_t* p = reinterpret_cast<const uint8_t*>(basePtr + i * 4);
+                out.joints0[i] = glm::ivec4(p[0], p[1], p[2], p[3]);
+            }
+        } else if (accJ.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
+            for (int i = 0; i < accJ.count; i++) {
+                const uint16_t* p = reinterpret_cast<const uint16_t*>(basePtr + i * 8);
+                out.joints0[i] = glm::ivec4(p[0], p[1], p[2], p[3]);
+            }
         }
+        
         std::cout << "Loaded " << out.joints0.size() << " joint indices." << std::endl;
     }
     {
-        auto& accW = model.accessors[prim.attributes.at("WEIGHTS_0")];
-        auto& bvW  = model.bufferViews[accW.bufferView];
-        auto& bufW = model.buffers[bvW.buffer];
-        const float* p = reinterpret_cast<const float*>(&bufW.data[bvW.byteOffset]);
+        const auto& accW = model.accessors[prim.attributes.at("WEIGHTS_0")];
+        const auto& bvW  = model.bufferViews[accW.bufferView];
+        const auto& bufW = model.buffers[bvW.buffer];
+        
+        // Calculate correct offset (bufferView offset + accessor offset)
+        size_t offset = bvW.byteOffset + accW.byteOffset;
+        const float* p = reinterpret_cast<const float*>(&bufW.data[offset]);
 
         out.weights0.resize(accW.count);
 

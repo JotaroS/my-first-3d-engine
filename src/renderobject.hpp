@@ -26,7 +26,19 @@ public:
         T* comp = new T(std::forward<Args>(args)...);
         comp->renderObject = this;  // Set the back-reference
         components.push_back(comp);
-        return *comp;
+        return *comp; // Return reference to the added component
+    }
+
+    // getComponent<T>()
+    template <typename T>
+    T* getComponent() {
+        for (auto comp : components) {
+            T* casted = dynamic_cast<T*>(comp);
+            if (casted) {
+                return casted;
+            }
+        }
+        return nullptr;
     }
 
     void draw(Renderer& renderer) {

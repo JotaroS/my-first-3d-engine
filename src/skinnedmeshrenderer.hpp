@@ -4,7 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "joint.hpp"
-
+#include "renderobject.hpp"
+#include <iostream>
+using namespace std;
 class SkinnedMeshRenderer : public Component {
 public:
     Mesh originalMesh;
@@ -18,9 +20,9 @@ public:
     void setGLTFMesh
     (
         const Mesh& mesh,
-        const std:: vector<Joint>& jnts,
-        const std::vector<glm::ivec4>& jointIndices,
-        const std::vector<glm::vec4>& jointWeights
+        const std:: vector<Joint>& jnts, // joints from skin
+        const std::vector<glm::ivec4>& jointIndices, // JOINTS_0
+        const std::vector<glm::vec4>& jointWeights // WEIGHTS_0
     ) {
         originalMesh = mesh;
         deformedMesh = mesh; // start with a copy
@@ -28,12 +30,22 @@ public:
         joints0 = jointIndices;
         weights0 = jointWeights;
 
+        // Debug: Check array sizes
+        std::cout << "Mesh positions: " << mesh.positions.size() << std::endl;
+        std::cout << "Joint indices: " << jointIndices.size() << std::endl;
+        std::cout << "Weights: " << jointWeights.size() << std::endl;
+        std::cout << "Joints: " << jnts.size() << std::endl;
+
         deformedMesh.upload(); // upload deformed mesh to GPU
     }
 
     void update() override {
         fk();
         cpuSkin();
+    }
+
+    void draw(Renderer& renderer) override {
+        renderer.drawMesh(deformedMesh, renderObject->transform.worldMatrix(), glm::vec3(1.0f, 1.0f, 1.0f));
     }
 
     void fk(){
@@ -51,23 +63,36 @@ public:
         auto& pos = originalMesh.positions;
         auto& out = deformedMesh.positions;
 
-        for (int i = 0; i < pos.size(); i++) {
+        // Safety check: ensure arrays match
+        if (pos.size() != joints0.size() || pos.size() != weights0.size()) {
+            std::cerr << "ERROR: Array size mismatch! pos=" << pos.size() 
+                      << " joints0=" << joints0.size() 
+                      << " weights0=" << weights0.size() << std::endl;
+            return;
+        }
+
+        for (size_t i = 0; i < pos.size(); i++) {
             glm::vec4 P = glm::vec4(pos[i], 1.0);
             glm::vec3 dst(0);
 
             glm::ivec4 jId = joints0[i];
             glm::vec4  w   = weights0[i];
 
+            
             for (int k = 0; k < 4; k++) {
                 int j = jId[k];
                 float wk = w[k];
                 if (wk <= 0.0f) continue;
+                
+                // Validate joint index
+                if (j < 0 || j >= static_cast<int>(joints.size())) {
+                    std::cerr << "Invalid joint index: " << j << " at vertex " << i << std::endl;
+                    continue;
+                }
 
                 glm::mat4 M = joints[j].world * joints[j].invBind;
                 dst += glm::vec3(M * P) * wk;
-            }
-
-            out[i] = dst;
+            }            out[i] = dst;
         }
 
         // GPU に転送（頂点だけ差し替え）

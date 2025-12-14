@@ -8,6 +8,7 @@ public:
     void init();
     void draw();
     void drawMesh(Mesh& m, glm::mat4 model, glm::vec3 color);
+    void handleInput(float dt);
     // mouse, keyboard etc
 
 private: 
@@ -21,5 +22,8 @@ private:
     float yaw = 0.0f;
     float pitch = 0.0f;
 
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, cameraDist);
+
     void updateCamera();
+    
 };

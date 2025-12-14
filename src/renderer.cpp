@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <string>
-
+#include <GLFW/glfw3.h>
 // Utility: shader compile
 static unsigned int compileShader(const char* vsPath, const char* fsPath) {
     auto load = [](const char* p) {
@@ -54,17 +54,27 @@ void Renderer::init(){
 }
 
 void Renderer::updateCamera(){
-    // Spherical to Cartesian conversion
-    float x = cameraDist * cosf(pitch) * sinf(yaw);
-    float y = cameraDist * sinf(pitch);
-    float z = cameraDist * cosf(pitch) * cosf(yaw);
+    // pararel movement (no lookat)
+    view = glm::mat4(1.0f);
+    view = glm::translate(view, -cameraPos);
+}
 
-    glm::vec3 cameraPos = glm::vec3(x, y, z);
-    glm::vec3 target = glm::vec3(0.0f, 0.0f, 0.0f);
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-
-    view = glm::lookAt(cameraPos, target, up);
-    proj = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f); 
+void Renderer::handleInput(float dt){
+    // wasd for camera movement
+    float vel = 10.0f * dt;
+    if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_W) == GLFW_PRESS) {
+        cameraPos.z -= vel;
+    }
+    if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_S) == GLFW_PRESS) {
+        cameraPos.z += vel;
+    }
+    if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_A) == GLFW_PRESS) {
+        cameraPos.x -= vel;
+    }
+    if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_D) == GLFW_PRESS) {
+        cameraPos.x += vel;
+    }
+    updateCamera();
 }
 
 void Renderer::draw() {
