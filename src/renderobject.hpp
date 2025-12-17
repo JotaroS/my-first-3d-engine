@@ -2,8 +2,10 @@
 #include <vector>
 #include <string>
 #include "transform.hpp"
-#include "renderer.hpp"
 #include "component.hpp"
+
+// Forward declaration
+class Renderer;
 
 using namespace std;
 
@@ -26,7 +28,7 @@ public:
         T* comp = new T(std::forward<Args>(args)...);
         comp->renderObject = this;  // Set the back-reference
         components.push_back(comp);
-        return *comp; // Return reference to the added component
+        return *comp;
     }
 
     // getComponent<T>()

@@ -70,8 +70,11 @@ int main(void){
         renderer.handleInput(deltaTime);
         renderer.draw();
         // slightly rotate the cube around y axis (quaternion
-        // lionObj.transform.rotation = glm::rotate(lionObj.transform.rotation, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        // lionObj.transform.scale = glm::vec3(0.5f); // scale down the lion model
+        // lionObj.transform.rotation = glm::rotate(lionObj.trcomansform.rotation, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        lionObj.transform.scale = glm::vec3(0.5f); // scale down the lion model
+        
+        // Rotate joint 10 like waving hands with sine wave
+        skinnedComp.joints[10].rotateAxisLocal(glm::vec3(0.0f, 0.0f, 1.0f), glm::sin(now * 3.0f) * glm::radians(0.5f));
         skinnedComp.update();
         
         lionObj.draw(renderer);

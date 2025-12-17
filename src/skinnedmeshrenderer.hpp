@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "joint.hpp"
 #include "renderobject.hpp"
+#include "renderer.hpp"
 #include <iostream>
 using namespace std;
 class SkinnedMeshRenderer : public Component {
@@ -36,6 +37,9 @@ public:
         std::cout << "Weights: " << jointWeights.size() << std::endl;
         std::cout << "Joints: " << jnts.size() << std::endl;
 
+        // Initialize with rest pose
+        update();
+        
         deformedMesh.upload(); // upload deformed mesh to GPU
     }
 
@@ -71,6 +75,8 @@ public:
             return;
         }
 
+        static bool firstRun = true;
+        
         for (size_t i = 0; i < pos.size(); i++) {
             glm::vec4 P = glm::vec4(pos[i], 1.0);
             glm::vec3 dst(0);
@@ -89,10 +95,13 @@ public:
                     std::cerr << "Invalid joint index: " << j << " at vertex " << i << std::endl;
                     continue;
                 }
-
                 glm::mat4 M = joints[j].world * joints[j].invBind;
                 dst += glm::vec3(M * P) * wk;
-            }            out[i] = dst;
+            }
+            
+            out[i] = dst;
+            
+            
         }
 
         // GPU に転送（頂点だけ差し替え）

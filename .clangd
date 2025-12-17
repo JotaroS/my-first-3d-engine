@@ -1,0 +1,8 @@
+CompileFlags:
+  Add:
+    - "-I./external/include"
+    - "-I./external/include/glad"
+    - "-I./build/_deps/glfw-src/include"
+    - "-I./build/_deps/glm"
+    - "-I./build/_deps/tinygltf-src"
+    - "-std=c++17"

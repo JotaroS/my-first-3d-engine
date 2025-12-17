@@ -102,6 +102,8 @@ void Renderer::draw() {
     glUniform3f(glGetUniformLocation(shader, "uColor"), 0.8f, 0.8f, 0.85f);
 }
 
+
+
 void Renderer::drawMesh(Mesh& m, glm::mat4 model, glm::vec3 color){
     glUniformMatrix4fv(glGetUniformLocation(shader, "uModel"), 1, GL_FALSE, &model[0][0]);
     glUniform3f(glGetUniformLocation(shader, "uColor"), color.r, color.g, color.b);

@@ -1,8 +1,8 @@
 #pragma once
-#include "renderer.hpp"
 
-// Forward declaration to avoid circular dependency
+// Forward declarations to avoid circular dependency
 class RenderObject;
+class Renderer;
 
 class Component
 {

@@ -3,11 +3,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "mesh.hpp"
+#include "scene.hpp"
 class Renderer {
 public: 
     void init();
     void draw();
     void drawMesh(Mesh& m, glm::mat4 model, glm::vec3 color);
+    void drawScene(Scene& scene);
     void handleInput(float dt);
     // mouse, keyboard etc
 

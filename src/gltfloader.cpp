@@ -4,6 +4,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "gltfloader.hpp"
 #include <iostream>
+#include <map>
 
 
 // GLTF 読み込み
@@ -99,18 +100,13 @@ GltfSkinData loadGltfSkin(const std::string& path) {
         const unsigned char* basePtr = &bufJ.data[offset];
         
         out.joints0.resize(accJ.count);
-
-        // Handle different component types
-        if (accJ.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE) {
-            for (int i = 0; i < accJ.count; i++) {
-                const uint8_t* p = reinterpret_cast<const uint8_t*>(basePtr + i * 4);
-                out.joints0[i] = glm::ivec4(p[0], p[1], p[2], p[3]);
-            }
-        } else if (accJ.componentType == TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT) {
-            for (int i = 0; i < accJ.count; i++) {
-                const uint16_t* p = reinterpret_cast<const uint16_t*>(basePtr + i * 8);
-                out.joints0[i] = glm::ivec4(p[0], p[1], p[2], p[3]);
-            }
+        for (int i = 0; i < accJ.count; i++) {
+            out.joints0[i] = glm::ivec4(
+                static_cast<int>(basePtr[i*4+0]),
+                static_cast<int>(basePtr[i*4+1]),
+                static_cast<int>(basePtr[i*4+2]),
+                static_cast<int>(basePtr[i*4+3])
+            );
         }
         
         std::cout << "Loaded " << out.joints0.size() << " joint indices." << std::endl;
@@ -147,6 +143,14 @@ GltfSkinData loadGltfSkin(const std::string& path) {
         for (int i = 0; i < skin.joints.size(); i++) {
             out.joints[i].invBind = glm::make_mat4(p + i*16);
         }
+
+        std::cout << "Loaded " << out.joints.size() << " inverse bind matrices." << std::endl;
+    }
+
+    // Create a map from node index to joint index
+    std::map<int, int> nodeToJoint;
+    for (int i = 0; i < skin.joints.size(); i++) {
+        nodeToJoint[skin.joints[i]] = i;
     }
 
     // joints: local transform + parent
@@ -154,17 +158,24 @@ GltfSkinData loadGltfSkin(const std::string& path) {
         int nodeIdx = skin.joints[i];
         const tinygltf::Node& node = model.nodes[nodeIdx];
 
-        // parent
-        out.joints[i].parent = -1;
+        // Find parent node index
+        int parentNodeIdx = -1;
         for (int j = 0; j < model.nodes.size(); j++) {
             const tinygltf::Node& potentialParent = model.nodes[j];
             for (int c : potentialParent.children) {
                 if (c == nodeIdx) {
-                    out.joints[i].parent = j;
+                    parentNodeIdx = j;
                     break;
                 }
             }
-            if (out.joints[i].parent != -1) break;
+            if (parentNodeIdx != -1) break;
+        }
+        
+        // Convert parent node index to joint index
+        if (parentNodeIdx != -1 && nodeToJoint.find(parentNodeIdx) != nodeToJoint.end()) {
+            out.joints[i].parent = nodeToJoint[parentNodeIdx];
+        } else {
+            out.joints[i].parent = -1;
         }
 
         // local transform
@@ -199,7 +210,7 @@ GltfSkinData loadGltfSkin(const std::string& path) {
             glm::translate(glm::mat4(1.0f), translation) *
             glm::mat4_cast(glm::quat(rotation.w, rotation.x, rotation.y, rotation.z)) *
             glm::scale(glm::mat4(1.0f), scale);
-        std::cout << "joint number " << i << " parent: " << out.joints[i].parent << std::endl;
+        // std::cout << "joint number " << i << " parent: " << out.joints[i].parent << std::endl;
     }
 
     out.mesh.upload();
