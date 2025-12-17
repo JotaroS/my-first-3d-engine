@@ -3,7 +3,6 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <string>
-#include "primitives.hpp"
 #include "renderer.hpp"
 #include "renderobject.hpp"
 #include "skinnedmeshrenderer.hpp"
