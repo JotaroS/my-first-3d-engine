@@ -19,7 +19,7 @@ public:
     void addLight(glm::vec3 pos,
                   glm::vec3 col = {1.0f, 0.95f, 0.9f}, float intensity = 1.0f)
     {
-        Light light(col, intensity);
+        Light light(pos, col, intensity);
         lights.push_back(light);
     }
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include "renderer.hpp"
+#include "scene.hpp"
 #include "renderobject.hpp"
 #include "skinnedmeshrenderer.hpp"
 #include "gltfloader.hpp"
@@ -41,6 +42,17 @@ int main(void){
     Renderer renderer;
     renderer.init();
 
+    Scene scene;
+    
+    // add key, fill, back lights
+    scene.addLight(glm::vec3(3.0f, 4.0f, 2.0f));   // Key light
+    scene.addLight(glm::vec3(-2.0f, 1.0f, 3.0f), glm::vec3(0.6f, 0.7f, 1.0f), 0.8f);  // Fill light
+    scene.addLight(glm::vec3(3.0f, 5.0f, -4.0f), glm::vec3(1.0f, 0.7f, 0.4f), 0.6f); // Rim light
+    scene.setBackground(glm::vec3(0.12f, 0.12f, 0.14f));
+    
+
+    renderer.scene = scene;
+
     GltfSkinData skinData;
     try {
         std::string modelPath = "../models/maybecaracter2rig2.gltf";
@@ -59,6 +71,7 @@ int main(void){
         skinData.joints0,
         skinData.weights0
     );
+    scene.renderObjects.push_back(&lionObj);
     float prev_time = static_cast<float>(glfwGetTime());
     while (!glfwWindowShouldClose(window))
     {
@@ -67,16 +80,13 @@ int main(void){
         prev_time = now;
         // keyboard input
         renderer.handleInput(deltaTime);
-        renderer.draw();
-        // slightly rotate the cube around y axis (quaternion
-        // lionObj.transform.rotation = glm::rotate(lionObj.trcomansform.rotation, glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        renderer.drawScene(scene);
         lionObj.transform.scale = glm::vec3(0.5f); // scale down the lion model
-        
         // Rotate joint 10 like waving hands with sine wave
         skinnedComp.joints[10].rotateAxisLocal(glm::vec3(0.0f, 0.0f, 1.0f), glm::sin(now * 3.0f) * glm::radians(0.5f));
         skinnedComp.update();
         
-        lionObj.draw(renderer);
+        // lionObj.draw(renderer);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

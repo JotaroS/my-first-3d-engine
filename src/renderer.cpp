@@ -77,6 +77,41 @@ void Renderer::handleInput(float dt){
     updateCamera();
 }
 
+void Renderer::drawScene(Scene& scene){
+    
+    // draw background and set lights
+    glClearColor(scene.backgroundColor.r, scene.backgroundColor.g, scene.backgroundColor.b, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(shader);
+
+    // matrices
+    glUniformMatrix4fv(glGetUniformLocation(shader, "uModel"), 1, GL_FALSE, &model[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "uView"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "uProj"), 1, GL_FALSE, &proj[0][0]);
+
+    // set lights from scene
+    for (size_t i = 0; i < scene.lights.size(); i++) {
+        std::string posName = "lightPos[" + std::to_string(i) + "]";
+        std::string colorName = "lightColor[" + std::to_string(i) + "]";
+        glUniform3f(glGetUniformLocation(shader, posName.c_str()), 
+                    scene.lights[i].position.x, 
+                    scene.lights[i].position.y, 
+                    scene.lights[i].position.z);
+        glUniform3f(glGetUniformLocation(shader, colorName.c_str()), 
+                    scene.lights[i].color.x, 
+                    scene.lights[i].color.y, 
+                    scene.lights[i].color.z);
+    }
+    glUniform3f(glGetUniformLocation(shader, "ambientColor"), 0.2f, 0.2f, 0.2f);
+    glUniform3f(glGetUniformLocation(shader, "uColor"), 0.8f, 0.8f, 0.85f);
+
+
+    for(auto obj : scene.renderObjects){
+       obj->draw(*this);
+    }
+}
+
 void Renderer::draw() {
     glClearColor(0.12f, 0.12f, 0.14f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -6,6 +6,7 @@
 #include "scene.hpp"
 class Renderer {
 public: 
+    Scene scene;
     void init();
     void draw();
     void drawMesh(Mesh& m, glm::mat4 model, glm::vec3 color);
