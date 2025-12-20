@@ -53,6 +53,12 @@ void Renderer::init(){
     updateCamera();
 }
 
+void Renderer::init(int windowWidth, int windowHeight){
+    width = windowWidth;
+    height = windowHeight;
+    init();
+}
+
 void Renderer::updateCamera(){
     // pararel movement (no lookat)
     view = glm::mat4(1.0f);

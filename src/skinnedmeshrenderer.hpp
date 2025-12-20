@@ -49,6 +49,13 @@ public:
     }
 
     void draw(Renderer& renderer) override {
+        // Debug: Check transform
+        static int frameCount = 0;
+        if (frameCount++ % 60 == 0) {
+            std::cout << "Scale: " << renderObject->transform.scale.x << ", " 
+                      << renderObject->transform.scale.y << ", " 
+                      << renderObject->transform.scale.z << std::endl;
+        }
         renderer.drawMesh(deformedMesh, renderObject->transform.worldMatrix(), glm::vec3(1.0f, 1.0f, 1.0f));
     }
 

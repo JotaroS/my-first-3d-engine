@@ -47,12 +47,27 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(tinygltf)
 
+# ImGui source files
+set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
+file(GLOB IMGUI_SOURCES 
+    ${IMGUI_DIR}/imgui.cpp
+    ${IMGUI_DIR}/imgui_draw.cpp
+    ${IMGUI_DIR}/imgui_tables.cpp
+    ${IMGUI_DIR}/imgui_widgets.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+    ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+)
+
 # executables (all files in src/ recursively)
 file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS src/*.cpp src/*.h)
-add_executable(${PROJECT_NAME} ${SRC_FILES} external/src/glad.c)
+add_executable(${PROJECT_NAME} ${SRC_FILES} external/src/glad.c ${IMGUI_SOURCES})
 
 # include directories for headers
-target_include_directories(${PROJECT_NAME} PRIVATE external/include/)
+target_include_directories(${PROJECT_NAME} PRIVATE 
+    external/include/
+    ${IMGUI_DIR}
+    ${IMGUI_DIR}/backends
+)
 
 # link libraries with opengl
 
@@ -66,6 +81,4 @@ target_link_libraries(FirstRender PRIVATE
 
 
 # mac のときは追加でフラグが欲しければここで
-if(APPLE)
-    # 例えば将来 Metal に移行したくなったら分岐を切る場所
-endif()
+# if(APPLE)

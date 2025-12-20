@@ -3,11 +3,18 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <string>
+#include "primitives.hpp"
+#include "meshrenderer.hpp"
 #include "renderer.hpp"
 #include "scene.hpp"
 #include "renderobject.hpp"
 #include "skinnedmeshrenderer.hpp"
 #include "gltfloader.hpp"
+// imgui
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "ui.hpp"
 
 int main(void){
     if (!glfwInit())
@@ -18,7 +25,7 @@ int main(void){
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Hello World", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1600, 900, "Hello World", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
@@ -37,10 +44,19 @@ int main(void){
         return -1;
     }
 
-    
+    // initialize imgui
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
+    UI ui;
+
 
     Renderer renderer;
-    renderer.init();
+    renderer.init(1600, 900);
 
     Scene scene;
     
@@ -71,25 +87,46 @@ int main(void){
         skinData.joints0,
         skinData.weights0
     );
+    lionObj.transform.scale = glm::vec3(0.1f);
     scene.renderObjects.push_back(&lionObj);
     float prev_time = static_cast<float>(glfwGetTime());
+
+    RenderObject sphereObj("Sphere_1");
+    RenderObject sphereObj2("Sphere_2");
+    RenderObject sphereObj3("Sphere_3");
+
+    sphereObj.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.5f, 36, 18));
+    sphereObj2.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.5f, 36, 18));
+    sphereObj3.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.5f, 36, 18));
+
+    sphereObj.addChild(&sphereObj2);
+    sphereObj2.addChild(&sphereObj3);
+
+    scene.addRenderObject(&sphereObj);
+
+
     while (!glfwWindowShouldClose(window))
     {
         float now = static_cast<float>(glfwGetTime());
         float deltaTime = now - prev_time; // Simple delta time calculation
         prev_time = now;
-        // keyboard input
         renderer.handleInput(deltaTime);
         renderer.drawScene(scene);
-        lionObj.transform.scale = glm::vec3(0.5f); // scale down the lion model
         // Rotate joint 10 like waving hands with sine wave
-        skinnedComp.joints[10].rotateAxisLocal(glm::vec3(0.0f, 0.0f, 1.0f), glm::sin(now * 3.0f) * glm::radians(0.5f));
-        skinnedComp.update();
+        // skinnedComp.joints[10].rotateAxisLocal(glm::vec3(0.0f, 0.0f, 1.0f), glm::sin(now * 3.0f) * glm::radians(0.5f));
+        // skinnedComp.update();
+
+        // Start the ImGui frame
+        // ui.draw();
+        ui.drawInspector(scene);
+
         
-        // lionObj.draw(renderer);
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
+
+    // save imgui settings
+    ImGui::SaveIniSettingsToDisk("imgui.ini");
 
     glfwDestroyWindow(window);
     glfwTerminate();

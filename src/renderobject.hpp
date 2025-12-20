@@ -12,10 +12,12 @@ using namespace std;
 class RenderObject {
 public:
     string name;
-    Transform transform;
+    Transform transform; // local transform
+    RenderObject* parent = nullptr;
+    RenderObject* child = nullptr;
     vector<Component*> components;
     RenderObject(const string& n) : name(n) {
-        
+
     }
     ~RenderObject() {
         for (auto comp : components) {
@@ -44,8 +46,25 @@ public:
     }
 
     void draw(Renderer& renderer) {
+
+        // if there is parent then set transform parent
+        if (parent) {
+            transform.parent = &parent->transform;
+        } else {
+            transform.parent = nullptr;
+        }
         for (auto& comp : components) {
             comp->draw(renderer);
         }
+
+        // draw child
+        if (child) {
+            child->draw(renderer);
+        }
+    }
+
+    void addChild(RenderObject* childObj) {
+        childObj->parent = this;
+        this->child = childObj;
     }
 };

@@ -8,6 +8,7 @@ class Renderer {
 public: 
     Scene scene;
     void init();
+    void init(int windowWidth, int windowHeight);
     void draw();
     void drawMesh(Mesh& m, glm::mat4 model, glm::vec3 color);
     void drawScene(Scene& scene);
