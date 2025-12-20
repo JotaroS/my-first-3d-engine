@@ -12,6 +12,7 @@ public:
     void draw();
     void drawMesh(Mesh& m, glm::mat4 model, glm::vec3 color);
     void drawScene(Scene& scene);
+    void drawGridPlane(float size = 10.0f, int divisions = 10);
     void handleInput(float dt);
     // mouse, keyboard etc
 

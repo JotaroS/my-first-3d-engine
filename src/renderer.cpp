@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <GLFW/glfw3.h>
+#include <glm/gtc/type_ptr.hpp>
 // Utility: shader compile
 static unsigned int compileShader(const char* vsPath, const char* fsPath) {
     auto load = [](const char* p) {
@@ -80,7 +81,74 @@ void Renderer::handleInput(float dt){
     if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_D) == GLFW_PRESS) {
         cameraPos.x += vel;
     }
+    // up down for y movement
+    if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_Q) == GLFW_PRESS) {
+        cameraPos.y -= vel;
+    }
+    if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_E) == GLFW_PRESS) {
+        cameraPos.y += vel;
+    }
     updateCamera();
+}
+
+void Renderer::drawGridPlane(float size, int divisions){
+    static unsigned int gridVAO = 0;
+    static unsigned int gridVBO = 0;
+    static unsigned int gridNBO = 0;
+    
+    // Initialize grid VAO/VBO on first call
+    if (gridVAO == 0) {
+        glGenVertexArrays(1, &gridVAO);
+        glGenBuffers(1, &gridVBO);
+        glGenBuffers(1, &gridNBO);
+    }
+    
+    // Build grid line vertices and normals
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec3> normals;
+    float halfSize = size / 2.0f;
+    
+    for (int i = 0; i <= divisions; ++i) {
+        float coord = -halfSize + i * (size / divisions);
+        
+        // Lines along X axis (parallel to X)
+        vertices.push_back(glm::vec3(-halfSize, 0.0f, coord));
+        vertices.push_back(glm::vec3(halfSize, 0.0f, coord));
+        normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+        normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+        
+        // Lines along Z axis (parallel to Z)
+        vertices.push_back(glm::vec3(coord, 0.0f, -halfSize));
+        vertices.push_back(glm::vec3(coord, 0.0f, halfSize));
+        normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+        normals.push_back(glm::vec3(0.0f, 1.0f, 0.0f));
+    }
+    
+    // Upload to GPU
+    glBindVertexArray(gridVAO);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, gridVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), vertices.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(0);
+    
+    glBindBuffer(GL_ARRAY_BUFFER, gridNBO);
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+    glEnableVertexAttribArray(1);
+    
+    // Draw the grid
+    glUseProgram(shader);
+    
+    glm::mat4 model = glm::mat4(1.0f);
+    glUniformMatrix4fv(glGetUniformLocation(shader, "uModel"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(shader, "uView"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(shader, "uProj"), 1, GL_FALSE, glm::value_ptr(proj));
+    glUniform3f(glGetUniformLocation(shader, "uColor"), 0.6, 0.6, 0.6);
+    
+    glDrawArrays(GL_LINES, 0, vertices.size());
+    
+    glBindVertexArray(0);
 }
 
 void Renderer::drawScene(Scene& scene){
@@ -88,6 +156,8 @@ void Renderer::drawScene(Scene& scene){
     // draw background and set lights
     glClearColor(scene.backgroundColor.r, scene.backgroundColor.g, scene.backgroundColor.b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
     glUseProgram(shader);
 

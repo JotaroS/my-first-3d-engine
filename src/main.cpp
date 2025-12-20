@@ -79,7 +79,7 @@ int main(void){
         std::cerr << "Failed to load GLTF: " << e.what() << std::endl;
         // Continue without the model
     }
-    RenderObject lionObj("Lion");
+    RenderObject lionObj("Humanoid");
     SkinnedMeshRenderer& skinnedComp = lionObj.addComponent<SkinnedMeshRenderer>();
     skinnedComp.setGLTFMesh(
         skinData.mesh,
@@ -95,15 +95,14 @@ int main(void){
     RenderObject sphereObj2("Sphere_2");
     RenderObject sphereObj3("Sphere_3");
 
-    sphereObj.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.5f, 36, 18));
-    sphereObj2.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.5f, 36, 18));
-    sphereObj3.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.5f, 36, 18));
+    sphereObj.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.1f, 36, 18));
+    sphereObj2.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.1f, 36, 18));
+    sphereObj3.addComponent<MeshRenderer>().setMesh(Primitives::makeSphere(0.1f, 36, 18));
 
     sphereObj.addChild(&sphereObj2);
     sphereObj2.addChild(&sphereObj3);
 
     scene.addRenderObject(&sphereObj);
-
 
     while (!glfwWindowShouldClose(window))
     {
@@ -112,6 +111,8 @@ int main(void){
         prev_time = now;
         renderer.handleInput(deltaTime);
         renderer.drawScene(scene);
+        renderer.drawGridPlane();
+    
         // Rotate joint 10 like waving hands with sine wave
         // skinnedComp.joints[10].rotateAxisLocal(glm::vec3(0.0f, 0.0f, 1.0f), glm::sin(now * 3.0f) * glm::radians(0.5f));
         // skinnedComp.update();
