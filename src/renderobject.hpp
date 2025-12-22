@@ -16,6 +16,7 @@ public:
     RenderObject* parent = nullptr;
     RenderObject* child = nullptr;
     vector<Component*> components;
+    bool isSelected = false;
     RenderObject(const string& n) : name(n) {
 
     }

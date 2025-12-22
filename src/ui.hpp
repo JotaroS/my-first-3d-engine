@@ -1,9 +1,12 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "renderobject.hpp"
 #include "scene.hpp"
 class UI{
 public:
+    RenderObject* selectedObj = nullptr;
+    
     void draw()
     {
         ImGui_ImplOpenGL3_NewFrame(); // imgui new frame
@@ -26,48 +29,72 @@ public:
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
     // recursively list all render objects
-    void drawRenderObjectTree(RenderObject* obj) {
-        if (ImGui::TreeNode(obj->name.c_str())){
-            ImGui::Text("Transform");
-            ImGui::DragFloat3("Position", &obj->transform.position.x, 0.1f);
-            ImGui::DragFloat4("Rotation", &obj->transform.rotation.x, 0.1f);
-            ImGui::DragFloat3("Scale", &obj->transform.scale.x, 0.1f, 0.01f, 10.0f);
+    void drawRenderObjectTree(RenderObject* obj, Scene& scene) {
+        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+        
+        // Add Selected flag if this object is selected
+        if (obj->isSelected) {
+            flags |= ImGuiTreeNodeFlags_Selected;
+        }
+        
+        bool nodeOpen = ImGui::TreeNodeEx(obj->name.c_str(), flags);
+        
+        // Check if the node was clicked to select it
+        if (ImGui::IsItemClicked()) {
+            // Deselect all objects first
+            for (auto& otherObj : scene.renderObjects) {
+                otherObj->isSelected = false;
+            }
+            // Select this one
+            obj->isSelected = true;
+            selectedObj = obj;
+        }
 
+        if (nodeOpen) {
             // draw child
             if (obj->child) {
-                drawRenderObjectTree(obj->child);
+                drawRenderObjectTree(obj->child, scene);
             }
-
             ImGui::TreePop();
         }
-    };
+    }
 
-    void drawInspector(Scene& scene){
+    void drawInspector(RenderObject* obj){
+        if (!obj) return;
+
+        ImGui::Begin("Inspector");
+
+        ImGui::Text("Selected Object: %s", obj->name.c_str());
+
+        // Transform info
+        ImGui::Separator();
+        ImGui::Text("Transform");
+        ImGui::InputFloat3("Position", &obj->transform.position.x);
+        ImGui::InputFloat4("Rotation (quat)", &obj->transform.rotation.x);
+        ImGui::InputFloat3("Scale", &obj->transform.scale.x);
+
+        ImGui::End();
+    }
+
+    void drawHierarchy(Scene& scene) {
         ImGui_ImplOpenGL3_NewFrame(); // imgui new frame
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        ImGui::Begin("Inspector");
-        // add inspector elements here
+        ImGui::Begin("Hierarchy");
 
-        // edit transform
-        
-
-        
         for (auto& obj : scene.renderObjects){
-            drawRenderObjectTree(obj);
+            drawRenderObjectTree(obj, scene);
         }
-        // for (auto& obj : scene.renderObjects){
-        //     if (ImGui::TreeNode(obj->name.c_str())){
-        //         ImGui::Text("Transform");
-        //         ImGui::DragFloat3("Position", &obj->transform.position.x, 0.1f);
-        //         ImGui::DragFloat4("Rotation", &obj->transform.rotation.x, 0.1f);
-        //         ImGui::DragFloat3("Scale", &obj->transform.scale.x, 0.1f, 0.01f, 10.0f);
-        //         ImGui::TreePop();
-        //     }
-        // }
 
         ImGui::End();
+        
+        // Draw inspector for selected object (outside hierarchy)
+        if (selectedObj) {
+            drawInspector(selectedObj);
+        }
+
         ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());;
+
     }
 };

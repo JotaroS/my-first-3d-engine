@@ -119,7 +119,7 @@ int main(void){
 
         // Start the ImGui frame
         // ui.draw();
-        ui.drawInspector(scene);
+        ui.drawHierarchy(scene);
 
         
         glfwSwapBuffers(window);
