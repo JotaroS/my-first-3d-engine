@@ -114,4 +114,21 @@ public:
         // GPU に転送（頂点だけ差し替え）
         deformedMesh.updatePositionsOnly();
     }
+
+    void drawInspector() override {
+        ImGui::Text("Skinned Mesh Renderer Component");
+        ImGui::Text("Number of Joints: %d", static_cast<int>(joints.size()));
+
+        for (size_t i = 0; i < joints.size(); i++) {
+            if (ImGui::TreeNode((void*)(intptr_t)i, "Joint %d", static_cast<int>(i))) {
+                ImGui::Text("Parent: %d", joints[i].parent);
+                ImGui::Text("Local Transform:");
+                ImGui::Text("  [%.2f, %.2f, %.2f, %.2f]", joints[i].local[0][0], joints[i].local[0][1], joints[i].local[0][2], joints[i].local[0][3]);
+                ImGui::Text("  [%.2f, %.2f, %.2f, %.2f]", joints[i].local[1][0], joints[i].local[1][1], joints[i].local[1][2], joints[i].local[1][3]);
+                ImGui::Text("  [%.2f, %.2f, %.2f, %.2f]", joints[i].local[2][0], joints[i].local[2][1], joints[i].local[2][2], joints[i].local[2][3]);
+                ImGui::Text("  [%.2f, %.2f, %.2f, %.2f]", joints[i].local[3][0], joints[i].local[3][1], joints[i].local[3][2], joints[i].local[3][3]);
+                ImGui::TreePop();
+            }
+        }
+    }
 };

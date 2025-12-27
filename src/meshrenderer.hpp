@@ -27,4 +27,9 @@ public:
     void update() override {
         // No dynamic updates needed for now
     }
+
+    void drawInspector() override {
+        ImGui::Text("Mesh Renderer Component");
+        ImGui::ColorEdit3("Mesh Color", &color[0]);
+    }
 };

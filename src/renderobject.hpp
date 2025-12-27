@@ -3,6 +3,9 @@
 #include <string>
 #include "transform.hpp"
 #include "component.hpp"
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
 
 // Forward declaration
 class Renderer;
@@ -67,5 +70,28 @@ public:
     void addChild(RenderObject* childObj) {
         childObj->parent = this;
         this->child = childObj;
+    }
+
+    void drawInspector(){
+        ImGui::Begin("Inspector");
+
+        ImGui::Text("Selected Object: %s", name.c_str());
+
+        // Transform info
+        ImGui::Separator();
+        ImGui::Text("Transform");
+        ImGui::DragFloat3("Position", &transform.position.x, 0.1f);
+        ImGui::DragFloat4("Rotation (quat)", &transform.rotation.x, 0.01f);
+        ImGui::DragFloat3("Scale", &transform.scale.x, 0.01f, 0.01f, 10.0f);
+        ImGui::Separator();
+        // draw components inspector
+        for (auto& comp : components) {
+            comp->drawInspector();
+            // space
+            ImGui::Separator();
+        }
+
+        ImGui::End();
+        return;
     }
 };

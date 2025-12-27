@@ -9,6 +9,8 @@ class Component
 public:
     RenderObject* renderObject = nullptr;
     virtual ~Component() {}
-    virtual void update() = 0;
-    virtual void draw(Renderer& renderer) = 0;
+    virtual void update() {}
+    virtual void draw(Renderer& renderer) {}
+
+    virtual void drawInspector() {}
 };

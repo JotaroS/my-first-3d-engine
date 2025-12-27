@@ -62,18 +62,7 @@ public:
     void drawInspector(RenderObject* obj){
         if (!obj) return;
 
-        ImGui::Begin("Inspector");
-
-        ImGui::Text("Selected Object: %s", obj->name.c_str());
-
-        // Transform info
-        ImGui::Separator();
-        ImGui::Text("Transform");
-        ImGui::InputFloat3("Position", &obj->transform.position.x);
-        ImGui::InputFloat4("Rotation (quat)", &obj->transform.rotation.x);
-        ImGui::InputFloat3("Scale", &obj->transform.scale.x);
-
-        ImGui::End();
+        obj -> drawInspector();
     }
 
     void drawHierarchy(Scene& scene) {
@@ -95,6 +84,5 @@ public:
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());;
-
     }
 };
