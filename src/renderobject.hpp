@@ -71,8 +71,6 @@ public:
     }
 
     void drawInspector(){
-        ImGui::Begin("Inspector");
-
         ImGui::Text("Selected Object: %s", name.c_str());
 
         // Transform info
@@ -88,8 +86,5 @@ public:
             // space
             ImGui::Separator();
         }
-
-        ImGui::End();
-        return;
     }
 };

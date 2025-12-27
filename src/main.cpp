@@ -120,7 +120,7 @@ int main(void){
         // Start the ImGui frame
         // ui.draw();
         ui.drawHierarchy(scene);
-
+        ui.drawRenderer(&renderer);
         
         glfwSwapBuffers(window);
         glfwPollEvents();

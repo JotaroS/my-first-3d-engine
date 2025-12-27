@@ -1,6 +1,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include "renderer.hpp"
 #include "renderobject.hpp"
 #include "scene.hpp"
 class UI{
@@ -62,7 +63,22 @@ public:
     void drawInspector(RenderObject* obj){
         if (!obj) return;
 
-        obj -> drawInspector();
+        ImGui::Begin("Inspector");
+        obj->drawInspector();
+        ImGui::End();
+    }
+
+    void drawRenderer(Renderer* renderer){
+        if (!renderer) return;
+
+
+; // imgui new frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        renderer->drawImGui();
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
     void drawHierarchy(Scene& scene) {

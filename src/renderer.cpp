@@ -61,33 +61,76 @@ void Renderer::init(int windowWidth, int windowHeight){
 }
 
 void Renderer::updateCamera(){
-    // pararel movement (no lookat)
-    view = glm::mat4(1.0f);
-    view = glm::translate(view, -cameraPos);
+    // Calculate forward direction from yaw and pitch
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+    front.y = sin(glm::radians(pitch));
+    front.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+    cameraFront = glm::normalize(front);
+    
+    // Use lookAt for FPS camera
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, glm::vec3(0.0f, 1.0f, 0.0f));
 }
 
 void Renderer::handleInput(float dt){
-    // wasd for camera movement
-    float vel = 10.0f * dt;
+    float vel = 5.0f * dt;
+    
+    // Calculate right vector for strafing
+    glm::vec3 right = glm::normalize(glm::cross(cameraFront, glm::vec3(0.0f, 1.0f, 0.0f)));
+    
+    // W/S - move forward/backward in camera direction (XZ plane only for FPS)
+    glm::vec3 frontXZ = glm::normalize(glm::vec3(cameraFront.x, 0.0f, cameraFront.z));
     if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_W) == GLFW_PRESS) {
-        cameraPos.z -= vel;
+        cameraPos += frontXZ * vel;
     }
     if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_S) == GLFW_PRESS) {
-        cameraPos.z += vel;
+        cameraPos -= frontXZ * vel;
     }
+    // A/D - strafe left/right
     if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_A) == GLFW_PRESS) {
-        cameraPos.x -= vel;
+        cameraPos -= right * vel;
     }
     if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_D) == GLFW_PRESS) {
-        cameraPos.x += vel;
+        cameraPos += right * vel;
     }
-    // up down for y movement
+    // Q/E - move up/down
     if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_Q) == GLFW_PRESS) {
         cameraPos.y -= vel;
     }
     if (glfwGetKey(glfwGetCurrentContext(), GLFW_KEY_E) == GLFW_PRESS) {
         cameraPos.y += vel;
     }
+
+    // Mouse drag to rotate camera
+    static double lastX = 0.0, lastY = 0.0;
+    static bool firstClick = true;
+    double xpos, ypos;
+    glfwGetCursorPos(glfwGetCurrentContext(), &xpos, &ypos);
+    
+    if (glfwGetMouseButton(glfwGetCurrentContext(), GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS) {
+        if (firstClick) {
+            lastX = xpos;
+            lastY = ypos;
+            firstClick = false;
+        }
+        
+        float xoffset = static_cast<float>(xpos - lastX);
+        float yoffset = static_cast<float>(lastY - ypos); // Reversed: y goes up
+
+        float sensitivity = 0.2f;
+        yaw += xoffset * sensitivity;
+        pitch += yoffset * sensitivity;
+
+        // Constrain pitch
+        if (pitch > 89.0f) pitch = 89.0f;
+        if (pitch < -89.0f) pitch = -89.0f;
+        
+        lastX = xpos;
+        lastY = ypos;
+    } else {
+        firstClick = true;
+    }
+
     updateCamera();
 }
 
@@ -219,4 +262,15 @@ void Renderer::drawMesh(Mesh& m, glm::mat4 model, glm::vec3 color){
     glUniformMatrix4fv(glGetUniformLocation(shader, "uModel"), 1, GL_FALSE, &model[0][0]);
     glUniform3f(glGetUniformLocation(shader, "uColor"), color.r, color.g, color.b);
     m.draw();
+}
+
+
+void Renderer::drawImGui(){
+    // draw fps, camera pos, camera rot and etc
+    ImGui::Begin("Renderer Info");
+    ImGui::Text("Camera Position: (%.2f, %.2f, %.2f)", cameraPos.x, cameraPos.y, cameraPos.z);
+    ImGui::Text("Camera Front: (%.2f, %.2f, %.2f)", cameraFront.x, cameraFront.y, cameraFront.z);
+    ImGui::Text("Yaw: %.2f, Pitch: %.2f", yaw, pitch);
+    ImGui::Text("Camera Distance: %.2f", cameraDist);
+    ImGui::End();
 }
