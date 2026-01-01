@@ -118,9 +118,10 @@ int main(void){
         // skinnedComp.update();
 
         // Start the ImGui frame
-        // ui.draw();
+        ui.beginFrame();
         ui.drawHierarchy(scene);
         ui.drawRenderer(&renderer);
+        ui.endFrame();
         
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -128,6 +129,11 @@ int main(void){
 
     // save imgui settings
     ImGui::SaveIniSettingsToDisk("imgui.ini");
+    
+    // Cleanup ImGui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 
     glfwDestroyWindow(window);
     glfwTerminate();

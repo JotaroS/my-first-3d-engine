@@ -68,23 +68,23 @@ public:
         ImGui::End();
     }
 
-    void drawRenderer(Renderer* renderer){
-        if (!renderer) return;
-
-
-; // imgui new frame
+    void beginFrame() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-        renderer->drawImGui();
+    }
+    
+    void endFrame() {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     }
 
+    void drawRenderer(Renderer* renderer){
+        if (!renderer) return;
+        renderer->drawImGui();
+    }
+
     void drawHierarchy(Scene& scene) {
-        ImGui_ImplOpenGL3_NewFrame(); // imgui new frame
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
         ImGui::Begin("Hierarchy");
 
         for (auto& obj : scene.renderObjects){
@@ -97,8 +97,5 @@ public:
         if (selectedObj) {
             drawInspector(selectedObj);
         }
-
-        ImGui::Render();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());;
     }
 };
